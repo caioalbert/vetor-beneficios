@@ -1,0 +1,22 @@
+{
+  "name": "agnes",
+  "version": "1.0.0",
+  "description": "A landing page template.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "compile-scss": "node-sass public/css/scss/style.scss",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "node-sass": "^9.0.0"
+  }
+}
