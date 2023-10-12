@@ -138,7 +138,8 @@ const User = {
   getUserById,
   updateUser,
   deleteUser,
-  count
+  count,
+  updateUserByCpf
 };
 
 module.exports = User;

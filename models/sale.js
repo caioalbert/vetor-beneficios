@@ -13,6 +13,7 @@ const saleSchema = `
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER NOT NULL,
         total REAL NOT NULL,
+        date VARCHAR(255) NOT NULL,
         asaasId VARCHAR(255),
         paymentUrl VARCHAR(255),
         paid BOOLEAN DEFAULT FALSE,
@@ -28,11 +29,11 @@ db.run(saleSchema, (err) => {
   }
 });
 
-const create = (userId, total, asaasId, paymentUrl) => {
+const create = (userId, total, date, asaasId, paymentUrl) => {
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO sales (userId, total, asaasId, paymentUrl) VALUES (?, ?, ?, ?)`,
-      [userId, total, asaasId, paymentUrl],
+      `INSERT INTO sales (userId, total, date, asaasId, paymentUrl) VALUES (?, ?, ?, ?, ?)`,
+      [userId, total, date, asaasId, paymentUrl],
       function (err) {
         if (err) {
           console.log(err);

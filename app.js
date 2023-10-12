@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
@@ -23,7 +25,7 @@ app.get('/', (req, res) => {
 
 function dueDate() {
   const date = new Date();
-  date.setDate(tomorrow.getDate() + 1);
+  date.setDate(date.getDate() + 1);
 
   const year = date.getFullYear();month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -46,7 +48,7 @@ function createSale(req, res, data, userId) {
   const cart = [{ name: 'default test', price: 10 }];
   const total = 10;
 
-  Sale.create(userId, total)
+  Sale.create(userId, total, dueDate())
     .then(saleId => {
       console.log('Venda criada com sucesso. ID: ' + saleId);
       insertLineItems(req, res, data, saleId, cart);
@@ -109,29 +111,27 @@ function updateUserIdInDatabase(req, res, customerAsaasId, cpf, saleId) {
 
 function createAsaasPayment(req, res, customerAsaasId, saleId) {
   const total = 10;
-  const dueDate = dueDate();
 
-  AsaasCreatePaymentCall.call(JSON.stringify(JSON.stringify({
+  AsaasCreatePaymentCall.call({
     customer: customerAsaasId,
     dueDate: dueDate(),
     billingType: 'CREDIT_CARD',
     value: total,
     description: 'Contratação de Assinatura - Vetor Benefícios',
-    externalReference: saleId,
-    callback: {
-      successUrl: 'http://localhost:3000/paidFinished?saleId=' + saleId,
-      autoRedirect: true
-    }
-  })
-  ))
-    .then(asaasResponse => {
-      console.log('Pagamento criado com sucesso no Asaas. ID: ' + asaasResponse.id);
-      updateSaleIdInDatabase(req, res, asaasResponse, saleId);
+    externalReference: saleId
+    //callback: {
+      //successUrl: 'http://localhost:3000/paidFinished?saleId=' + saleId,
+      //autoRedirect: true
+    //}
     })
-    .catch(err => {
-      console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
-    });
+      .then(asaasResponse => {
+        console.log('Pagamento criado com sucesso no Asaas. ID: ' + asaasResponse.id);
+        updateSaleIdInDatabase(req, res, asaasResponse, saleId);
+      })
+      .catch(err => {
+        console.error(err.message);
+        res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      });
 }
 
 function updateSaleIdInDatabase(req, res, asaasResponse, saleId) {
