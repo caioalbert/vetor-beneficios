@@ -11,6 +11,7 @@ const Sale = require('./models/sale');
 const LineItem = require('./models/lineItem');
 const AsaasCreateCustomerCall = require('./lib/asaas/createCustomerCall');
 const AsaasCreatePaymentCall = require('./lib/asaas/createPaymentCall');
+const SiprovCreateCustomerCall = require('./lib/siprov/createCustomerCall');
 
 const PORT = 3000;
 app.set('view engine', 'ejs')
@@ -147,16 +148,58 @@ function updateSaleIdInDatabase(req, res, asaasResponse, saleId) {
 }
 
 app.get('/paidFinished', (req, res) => {
-  const saleId = req.query.saleId;
+  res.render('paidFinished');
+});
+
+app.post('/finishUserPayment', (req, res) => {
+  if (req.headers.authorization != process.env.SECRET_WEBHOOK_KEY) {
+    return res.status(401).send('Unauthorized');
+  }
+  if ((!req.body.event) || (!req.body.payment)) {
+    return res.status(400).send('Bad Request');
+  }
+  if(req.body.event !== 'PAYMENT_RECEIVED') {
+    return res.status(200).send({});
+  }
+  if (!req.body.payment.externalReference) {
+    return res.status(400).send('Pending External Reference');
+  }
+
+  const saleId = req.body.payment.externalReference;
 
   Sale.getSaleById(saleId)
     .then(sale => {
       console.log('Venda encontrada com sucesso. ID: ' + sale.id);
-      res.redirect('/checkoutResult?success=Pagamento realizado com sucesso. ID: ' + sale.id);
+
+      return User.getUserById(sale.userId);
+    })
+    .then(user => {
+      console.log('Usuário encontrado com sucesso. ID: ' + user.id);
+
+      SiprovCreateCustomerCall.call({
+        codLoja: 2614,
+        codigoIntegracao: 519,
+        cpfCnpj: user.cpf,
+        dataNascimento: user.birthDate,
+        email: user.email,
+        natureza: 'F',
+        nomePessoa: user.customerName,
+        telefones: [
+          {
+            tipo: 'Celular',
+            numero: user.phone
+          }
+        ]
+      })
+        
+    })
+    .then(siprovResponse => {
+      console.log('Cliente criado com sucesso no Siprov.');
+      return res.status(200).send({});
     })
     .catch(err => {
-      console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      console.log(err.message)
+      return res.status(200).send({ error: 'Falha ao criar cliente no Siprov.'});
     });
 });
 
