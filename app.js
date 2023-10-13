@@ -13,7 +13,7 @@ const AsaasCreateCustomerCall = require('./lib/asaas/createCustomerCall');
 const AsaasCreatePaymentCall = require('./lib/asaas/createPaymentCall');
 const SiprovCreateCustomerCall = require('./lib/siprov/createCustomerCall');
 
-const PORT = 3000;
+const PORT = 3001;
 app.set('view engine', 'ejs')
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -119,11 +119,11 @@ function createAsaasPayment(req, res, customerAsaasId, saleId) {
     billingType: 'CREDIT_CARD',
     value: total,
     description: 'Contratação de Assinatura - Vetor Benefícios',
-    externalReference: saleId
-    //callback: {
-      //successUrl: 'http://localhost:3000/paidFinished?saleId=' + saleId,
-      //autoRedirect: true
-    //}
+    externalReference: saleId,
+    callback: {
+      successUrl: 'http://24.144.88.195:3001/paidFinished?saleId=' + saleId,
+      autoRedirect: true
+    }
     })
       .then(asaasResponse => {
         console.log('Pagamento criado com sucesso no Asaas. ID: ' + asaasResponse.id);
