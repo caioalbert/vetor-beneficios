@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento finalizado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="vh-100 d-flex justify-content-center align-items-center">
+        <div class="col-md-4">
+            <div class="border border-3 border-success"></div>
+            <div class="card bg-white shadow p-5">
+                <div class="mb-4 text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="text-danger" width="75" height="75" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="M10.293 5.293a.997.997 0 0 1 1.414 0l1 1a.997.997 0 0 1 0 1.414l-3 3a.997.997 0 0 1-1.414 0l-3-3a.997.997 0 0 1 0-1.414l1-1a.997.997 0 0 1 1.414 0l1.293 1.293L10 5.586l.293-.293z" />
+                    <path fill-rule="evenodd" d="M11 8a.5.5 0 0 1-.5.5H5a.5.5 0 0 1 0-1h5a.5.5 0 0 1 .5.5z" />
+                  </svg>                  
+                </div>
+                <div class="text-center">
+                    <h1>Falha!</h1>
+                    <p>Tente novamente, se o erro persistir fale conosco no whatsapp.</p>
+                </div>
+                <div class="container mt-4">
+                    <h2 class="text-center">Resumo da Compra</h2>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID da Venda</th>
+                                <th>Nome do Produto</th>
+                                <th>Quantidade</th>
+                                <th>Preço Unitário</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>12345</td>
+                                <td>Produto XYZ</td>
+                                <td>2</td>
+                                <td>R$ 50,00</td>
+                            </tr>
+                            <!-- Adicione mais linhas para outros itens, se necessário -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/" class="btn btn-outline-success">Voltar ao inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+      const failure = urlParams.get('failure');
+    
+      if (success) {
+        document.getElementById('success').style.display = 'block';
+        document.getElementById('success').innerHTML = 'Compra realizada com sucesso! <a href="' + success + '">Clique aqui para pagar</a>';
+      }else	if (failure) {
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerHTML = 'Erro ao realizar compra: ' + failure;
+      }
+  </script>
+</body>
+</html>

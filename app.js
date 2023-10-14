@@ -158,7 +158,7 @@ app.post('/finishUserPayment', (req, res) => {
   if ((!req.body.event) || (!req.body.payment)) {
     return res.status(400).send('Bad Request');
   }
-  if(req.body.event !== 'PAYMENT_RECEIVED') {
+  if(req.body.event !== 'PAYMENT_CONFIRMED') {
     return res.status(200).send({});
   }
   if (!req.body.payment.externalReference) {
@@ -216,8 +216,8 @@ app.post('/checkout', (req, res) => {
   insertUser(req, res, data);
 });
 
-app.get('/checkoutResult', (req, res) => {
-  res.render('checkoutResult');
+app.get('/checkoutError', (req, res) => {
+  res.render('checkoutError');
 });
 
 app.get('/checkout', (req, res) => {
