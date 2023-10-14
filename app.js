@@ -152,7 +152,7 @@ app.get('/paidFinished', (req, res) => {
 });
 
 app.post('/finishUserPayment', (req, res) => {
-  if (req.headers['asaas-access-token'] != process.env.SECRET_WEBHOOK_KEY) {
+  if (req.headers.asaas_access_token != process.env.SECRET_WEBHOOK_KEY) {
     return res.status(401).send('Unauthorized');
   }
   if ((!req.body.event) || (!req.body.payment)) {
