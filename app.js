@@ -121,7 +121,7 @@ function createAsaasPayment(req, res, customerAsaasId, saleId) {
     description: 'Contratação de Assinatura - Vetor Benefícios',
     externalReference: saleId,
     callback: {
-      successUrl: 'http://24.144.88.195:3001/paidFinished?saleId=' + saleId,
+      successUrl: 'https://vetorbeneficios.com/paidFinished?saleId=' + saleId,
       autoRedirect: true
     }
     })
@@ -152,7 +152,7 @@ app.get('/paidFinished', (req, res) => {
 });
 
 app.post('/finishUserPayment', (req, res) => {
-  if (req.headers.authorization != process.env.SECRET_WEBHOOK_KEY) {
+  if (req.headers['asaas-access-token'] != process.env.SECRET_WEBHOOK_KEY) {
     return res.status(401).send('Unauthorized');
   }
   if ((!req.body.event) || (!req.body.payment)) {
