@@ -66,7 +66,15 @@ const getSaleById = (id) => {
         console.error(err);
         reject(err);
       } else {
-        resolve(row);
+        db.all(`SELECT * FROM line_items WHERE saleId = ?`, [id], (err, rows) => {
+          if (err) {
+            console.error(err);
+            reject(err);
+          } else {
+            row.items = rows;
+            resolve(row);
+          }
+        });
       }
     });
   });

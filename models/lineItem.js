@@ -11,6 +11,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 const lineItemSchema = `
   CREATE TABLE IF NOT EXISTS line_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
     price REAL NOT NULL,
     saleId INTEGER,
@@ -26,11 +27,11 @@ db.run(lineItemSchema, (err) => {
   }
 });
 
-const create = (quantity, price, saleId) => {
+const create = (name, quantity, price, saleId) => {
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO line_items (quantity, price, saleId) VALUES (?, ?, ?)`,
-      [quantity, price, saleId],
+      `INSERT INTO line_items (name, quantity, price, saleId) VALUES (?, ?, ?, ?)`,
+      [name, quantity, price, saleId],
       function (err) {
         if (err) {
           console.log(err);
@@ -73,11 +74,11 @@ const getLineItemsBySaleId = (saleId) => {
   });
 };
 
-const updateLineItem = (id, quantity, price, saleId) => {
+const updateLineItem = (id, name, quantity, price, saleId) => {
   return new Promise((resolve, reject) => {
     db.run(
-      `UPDATE line_items SET quantity = ?, price = ?, saleId = ? WHERE id = ?`,
-      [quantity, price, saleId, id],
+      `UPDATE line_items SET name = ?, quantity = ?, price = ?, saleId = ? WHERE id = ?`,
+      [name, quantity, price, saleId, id],
       (err) => {
         if (err) {
           console.error(err);

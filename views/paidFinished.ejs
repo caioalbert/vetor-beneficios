@@ -22,28 +22,26 @@
                 </div>
                 <div class="text-center">
                     <h1>Obrigado!</h1>
-                    <p>Vetor benefícios entrará em contato com você por email ou telefone em breve.</p>
+                    <p>Nossa equipe entrará em contato com você por email ou telefone em breve.</p>
                 </div>
                 <div class="container mt-4">
-                    <h2 class="text-center">Resumo da Compra</h2>
-                    <table class="table table-bordered">
+                    <h2 class="text-center">#<%- sale.id %> - Resumo da venda </h2>
+                    <table class="table table-bordered mt-3">
                         <thead>
                             <tr>
-                                <th>ID da Venda</th>
                                 <th>Nome do Produto</th>
                                 <th>Quantidade</th>
                                 <th>Preço Unitário</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>12345</td>
-                                <td>Produto XYZ</td>
-                                <td>2</td>
-                                <td>R$ 50,00</td>
-                            </tr>
-                            <!-- Adicione mais linhas para outros itens, se necessário -->
+                        <tbody class="itemsBody">
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2">Total</th>
+                                <th><%- sale.total.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'}) %></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 <div class="text-center mt-3">
@@ -52,5 +50,29 @@
             </div>
         </div>
     </div>
+    // import jquery
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // show alert sucess after page load all
+        $(window).on('load', function () {
+            const sale = JSON.parse('<%- JSON.stringify(sale) %>');
+
+            // add sale id with bold
+            $('#saleIdContent').html(`Identificador da Venda: <b>#${sale.id}</b>`);
+
+            sale.items.forEach(item => {
+                let priceBr = item.price.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+                item.price = priceBr
+
+                $('.itemsBody').append(`
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price}</td>
+                    </tr>
+                `)
+            })
+        })
+    </script>
 </body>
 </html>

@@ -40,7 +40,7 @@ function insertUser(req, res, data) {
     })
     .catch(err => {
       console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
     });
 }
 
@@ -55,7 +55,7 @@ function createSale(req, res, data, userId) {
     })
     .catch(err => {
       console.error("Erro na criação da venda:" + err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
     })
 }
 
@@ -63,7 +63,7 @@ function insertLineItems(req, res, data, saleId, cart) {
   const failureCount = 0;
 
   cart.forEach(item => {
-    LineItem.create(1, item.price, saleId)
+    LineItem.create(item.name, 1, item.price, saleId)
       .then(lineItemId => {
         console.error('Item de venda criado com sucesso. ID: ' + lineItemId);
       })
@@ -76,7 +76,7 @@ function insertLineItems(req, res, data, saleId, cart) {
   if (failureCount === 0) {
     createAsaasCustomerAndPayment(req, res, data, saleId);
   }else {
-    res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+    res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
   }
 }
 
@@ -93,7 +93,7 @@ function createAsaasCustomerAndPayment(req, res, data, saleId) {
     })
     .catch(err => {
       console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
     });
 }
 
@@ -105,7 +105,7 @@ function updateUserIdInDatabase(req, res, customerAsaasId, data, saleId) {
     })
     .catch(err => {
       console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
     });
 }
 
@@ -128,7 +128,7 @@ function createAsaasPayment(req, res, customerAsaasId, saleId, data) {
       })
       .catch(err => {
         console.error(err.message);
-        res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+        res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
       });
 }
 
@@ -140,12 +140,21 @@ function updateSaleIdInDatabase(req, res, asaasResponse, saleId) {
     })
     .catch(err => {
       console.error(err.message);
-      res.redirect('/checkoutResult?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
     });
 }
 
 app.get('/paidFinished', (req, res) => {
-  res.render('paidFinished');
+  let saleId = req.query.saleId;
+
+  Sale.getSaleById(saleId)
+    .then(sale => {
+      res.render('paidFinished', { sale: sale });
+    })
+    .catch(err => {
+      console.error(err.message);
+      res.redirect('/errorPage?failure=Ocorreu um erro ao exibir o resumo da sua venda. Passe o ID da venda para o suporte. #' + saleId);
+    });
 });
 
 app.post('/finishUserPayment', (req, res) => {
@@ -223,8 +232,8 @@ app.post('/checkout', (req, res) => {
   insertUser(req, res, data);
 });
 
-app.get('/checkoutError', (req, res) => {
-  res.render('checkoutError');
+app.get('/errorPage', (req, res) => {
+  res.render('errorPage');
 });
 
 app.get('/checkout', (req, res) => {

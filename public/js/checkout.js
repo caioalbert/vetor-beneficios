@@ -9,6 +9,49 @@ $(document).ready(function() {
         localStorage.setItem('total', total);
     }
 
+    function validateCpf(cpf) {
+        let sum = 0;
+        let remainder;
+      
+        cpf = cpf.replace(/\D/g, '');
+      
+        if (cpf === '' || cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
+          return false;
+        }
+      
+        for (let i = 1; i <= 9; i++) {
+          sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+        }
+      
+        remainder = (sum * 10) % 11;
+      
+        if (remainder === 10 || remainder === 11) {
+          remainder = 0;
+        }
+      
+        if (remainder !== parseInt(cpf.substring(9, 10))) {
+          return false;
+        }
+      
+        sum = 0;
+      
+        for (let i = 1; i <= 10; i++) {
+          sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+        }
+      
+        remainder = (sum * 10) % 11;
+      
+        if (remainder === 10 || remainder === 11) {
+          remainder = 0;
+        }
+      
+        if (remainder !== parseInt(cpf.substring(10, 11))) {
+          return false;
+        }
+      
+        return true;
+    }
+
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let total = parseFloat(localStorage.getItem('total')) || 0;
 
@@ -23,7 +66,6 @@ $(document).ready(function() {
         alert('Produto adicionado com sucesso');
     });
 
-    // Remover do carrinho
     $('#cartItems').on('click', '.removeItem', function() {
         let index = $(this).parent().index();
         let removedItem = cart.splice(index, 1);
@@ -32,7 +74,6 @@ $(document).ready(function() {
         updateCart();
     });
 
-    // Limpar o carrinho
     $('#clearCart').click(function() {
         cart = [];
         total = 0;
@@ -41,15 +82,19 @@ $(document).ready(function() {
         localStorage.removeItem('total');
     });
 
-    //before submit add html with hidden input to form with cart and total
     $('#checkoutForm').submit(function(e) {
         e.preventDefault();
-        // valida se tem itens no carrinho e não deixa avançar se não tiver
         if (cart.length == 0) {
             alert('Não é possível finalizar a compra sem itens no carrinho');
             return;
         }
-        // valida se todos os campos estão preenchidos       
+
+        let cpf = $('#cpf').val();
+        if (!validateCpf(cpf)) {
+            alert('CPF inválido');
+            return;
+        }
+
         $('#cart').val(JSON.stringify(cart));
         $('#total').val(total);
 
