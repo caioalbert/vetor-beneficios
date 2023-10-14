@@ -2,9 +2,14 @@ $(document).ready(function() {
     function updateCart() {
         $('#cartItems').empty();
         cart.forEach(item => {
-            $('#cartItems').append(`<li class="list-group-item">${item.name} - R$${item.price.toFixed(2)} <button class="btn btn-danger btn-sm float-right removeItem">Remover</button></li>`);
+          // faz o append do item na lista e coloca um label circulado em vermelho com um - dentro e uma classe removeItem e ele vai logo após o preço juntinho
+          $('#cartItems').append('<li class="list-group-item d-flex justify-content-between lh-condensed"><div><h6 class="my-0 text-muted">' + item.name + '</h6></div><span class="text-muted">R$ ' + item.price + '</span><span class="removeItem badge badge-outline badge-small badge-pill">X</span></li>');
+
         });
-        $('#totalPrice').text(total.toFixed(2));
+
+        $('#cartItems').append('<li class="list-group-item d-flex justify-content-between"><span>Total (BRL)</span><strong>R$ ' + total.toFixed(2).replace('.', ',') + '</strong></li>');
+        $('.cartItemsCount').text(cart.length + ' itens');
+
         localStorage.setItem('cart', JSON.stringify(cart));
         localStorage.setItem('total', total);
     }
@@ -80,6 +85,12 @@ $(document).ready(function() {
         updateCart();
         localStorage.removeItem('cart');
         localStorage.removeItem('total');
+
+        window.location.href = '/#planos';
+    });
+
+    $('#moreProducts').click(function() {
+      window.location.href = '/#planos';
     });
 
     $('#checkoutForm').submit(function(e) {

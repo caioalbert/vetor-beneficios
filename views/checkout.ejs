@@ -1,74 +1,127 @@
-<!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="https://getbootstrap.com.br/docs/4.1/https://getbootstrap.com.br/docs/4.1/favicon.ico">
+
     <title>Checkout</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            margin: 50px;
-        }
-    </style>
+
+    <!-- Principal CSS do Bootstrap -->
+    <link href="https://getbootstrap.com.br/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
 
-<div class="container">
-    <h1 class="row justify-content-center">Checkout</h1>
+<body class="bg-light">
 
-    <h2>Informações do cliente</h2>
-    <hr>
-    <div class="alert alert-danger" id="error" style="display: none"></div>
-    <div class="alert alert-success" id="success" style="display: none"></div>
-    <div class="alert alert-warning" id="warning" style="display: none"></div>
-
-    <form id="checkoutForm" action="/checkout" method="POST">
-        <div class="form-group">
-            <label for="customerName">Nome</label>
-            <input type="text" class="form-control" id="customerName" name="customerName" required>
-        </div>
-        <div class="form-group">
-            <label for="customerEmail">Email</label>
-            <input type="email" class="form-control" id="customerEmail" name="customerEmail" required>
-        </div>
-        <div class="form-group">
-            <label for="cpf">CPF</label>
-            <input type="number" class="form-control" id="cpf" name="cpf" required>
-        </div>
-        <div class="form-group">
-            <label for="data-nasc">Data de nascimento</label>
-            <input type="date" class="form-control" id="data-nasc" name="dataNascimento" required>
-        </div>
-        <div class="form-group">
-            <label for="tel-whatsapp">Número (WhatsApp)</label>
-            <input type="tel" class="form-control" id="tel-whatsapp" name="numeroWhatsApp" required>
-        </div>
-        <div class="form-group">
-            <label for="endereco">Endereço</label>
-            <input type="text" class="form-control" id="endereco" name="endereco" required>
+    <div class="container">
+        <div class="py-5 text-center">
+            <img class="d-block mx-auto mb-4" src="images/logo-vetor.png" alt="" width="72"
+                height="72">
         </div>
 
-        <div class="col-md-6">
-            <h2>Carrinho</h2>
-            <ul class="list-group" id="cartItems">
-            </ul>
-            <p>Total: R$<span id="totalPrice">0.00</span></p>
-
-            <button class="btn btn-danger" id="clearCart">Limpar Carrinho</button>
-            <button type="submit" class="btn btn-success">Finalizar Compra</button>
-            <a class="btn btn-warning" href="/">Continuar compras</a>
-        </div>
-
+        <form id="checkoutForm" action="/checkout" method="POST">
         <input type="hidden" id="cart" name="cart" value="">
         <input type="hidden" id="total" name="total" value="">
-    </form>
 
-    <hr>
-</div>
+        <div class="row">
+            <div class="col-md-4 order-md-2 mb-4">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Seu carrinho</span>
+                    <span class="badge badge-secondary badge-pill cartItemsCount" id="cartItemsCount"></span>
+                </h4>
+                <ul class="list-group mb-3 listCartItems mt-5" id="cartItems">
+                </ul>
+                <button class="btn btn-outline-warning btn-ms btn-block mt-2" id="moreProducts" type="button">Ver mais produtos</button>
+                <button class="btn btn-outline-danger btn-ms btn-block mt-2" id="clearCart" type="button">Remover todos os itens</button>
+            </div>
+            <div class="col-md-8 order-md-1">
+                <h4 class="mb-3">Dados pessoais</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customerName">Nome</label>
+                            <input type="text" class="form-control" id="customerName" name="customerName" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir um nome válido.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="customerEmail" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir um sobre email válido.
+                            </div>
+                        </div>
+                    </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="/js/checkout.js"></script>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone">Telefone (WhatsApp)</label>
+                            <input type="tel" class="form-control" id="phone" name="numeroWhatsApp" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir um telefone válido.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="data-nasc">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="data-nasc" name="dataNascimento" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir uma data de nascimento válida.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="cpf">CPF</label>
+                            <input type="number" class="form-control" id="cpf" name="cpf" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir um cpf válido.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="endereco">Endereço</label>
+                            <input type="text" class="form-control" id="endereco" name="endereco" required>
+                            <div class="invalid-feedback">
+                                É obrigatório inserir um sobre nome válido.
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-md-12 mt-5">
+                        <button class="btn btn-warning btn-lg btn-block" type="submit">Avançar para pagamento</button>
+                        <p class="text-muted text-center text-small">O pagamento seguro é gerenciado pela plataforma <a href="https://asaas.com/sobre-nos" target="_blank">Asaas</a></p>            
+                    </div>
+            </div>
+        </div>
+        </form>
+
+        <footer class="my-5 text-muted text-center text-small site-footer mt-5">
+            <p class="mb-1">© 2023 Desenvolvido por Rocket App Tech</p>
+        </footer>
+    </div>
+
+    <!-- Principal JavaScript do Bootstrap
+    ================================================== -->
+    <!-- Foi colocado no final para a página carregar mais rápido -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="https://getbootstrap.com.br/docs/4.1/assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="https://getbootstrap.com.br/docs/4.1/assets/js/vendor/popper.min.js"></script>
+    <script src="https://getbootstrap.com.br/docs/4.1/dist/js/bootstrap.min.js"></script>
+    <script src="https://getbootstrap.com.br/docs/4.1/assets/js/vendor/holder.min.js"></script>
+
+
+    <div id="loom-companion-mv3" ext-id="liecbddmkiiihnedobmlmillhodjkdmb">
+        <section id="shadow-host-companion"></section>
+    </div>
+    
+    <script src="/js/checkout.js"></script>
 </body>
+
 </html>
