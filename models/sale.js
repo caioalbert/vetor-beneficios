@@ -106,12 +106,53 @@ const updateSalePaid = (id) => {
   });
 }
 
+const itemsCount = (id) => {
+  return new Promise((resolve, reject) => {
+    db.get(`SELECT COUNT(*) AS count FROM line_items WHERE saleId = ?`, [id], (err, row) => {
+      if (err) {
+        console.error(err);
+        reject(err);
+      } else {
+        resolve(row.count);
+      }
+    });
+  });
+}
+
+const printAllSaleDataAndMoreItemsCountInfoInLog = () => {
+  getSales()
+    .then(sales => {
+      sales.forEach(sale => {
+        getSaleById(sale.id)
+          .then(saleDetails => {
+            itemsCount(saleDetails.userId)
+              .then(count => {
+                console.log(
+                  `
+                  Venda ID: ${saleDetails.id}, 
+                  Usuário ID: ${saleDetails.userId}, 
+                  Total: ${saleDetails.total}, 
+                  Data: ${saleDetails.date}, 
+                  AsaasID: ${saleDetails.asaasId}, 
+                  PaymentURL: ${saleDetails.paymentUrl}, 
+                  Paid: ${saleDetails.paid}, 
+                  Itens: ${count}`
+                );
+              });
+          });
+      });
+    });
+}
+
+
 const Sale = {
   create,
   getSales,
   getSaleById,
   updateSaleAsaasData,
-  updateSalePaid
+  updateSalePaid,
+  itemsCount,
+  printAllSaleDataAndMoreItemsCountInfoInLog
 };
 
 module.exports = Sale;

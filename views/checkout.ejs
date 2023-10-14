@@ -22,7 +22,7 @@
     <div class="alert alert-success" id="success" style="display: none"></div>
     <div class="alert alert-warning" id="warning" style="display: none"></div>
 
-    <form id="customerForm" action="/checkout" method="POST">
+    <form id="checkoutForm" action="/checkout" method="POST">
         <div class="form-group">
             <label for="customerName">Nome</label>
             <input type="text" class="form-control" id="customerName" name="customerName" required>
@@ -58,6 +58,9 @@
             <button type="submit" class="btn btn-success">Finalizar Compra</button>
             <a class="btn btn-warning" href="/">Continuar compras</a>
         </div>
+
+        <input type="hidden" id="cart" name="cart" value="">
+        <input type="hidden" id="total" name="total" value="">
     </form>
 
     <hr>

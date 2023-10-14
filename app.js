@@ -3,7 +3,6 @@ require('dotenv').config();
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express = require('express');
-const fetch = require('node-fetch');
 const app = express();
 
 const User = require('./models/user');
@@ -46,8 +45,8 @@ function insertUser(req, res, data) {
 }
 
 function createSale(req, res, data, userId) {
-  const cart = [{ name: 'default test', price: 10 }];
-  const total = 10;
+  const cart = data.cart;
+  const total = data.total;
 
   Sale.create(userId, total, dueDate())
     .then(saleId => {
@@ -90,7 +89,7 @@ function createAsaasCustomerAndPayment(req, res, data, saleId) {
   }))
     .then(asaasResponse => {
       console.log('Cliente criado com sucesso no Asaas. ID: ' + asaasResponse.id);
-      updateUserIdInDatabase(req, res, asaasResponse.id, data.cpf, saleId);
+      updateUserIdInDatabase(req, res, asaasResponse.id, data, saleId);
     })
     .catch(err => {
       console.error(err.message);
@@ -98,11 +97,11 @@ function createAsaasCustomerAndPayment(req, res, data, saleId) {
     });
 }
 
-function updateUserIdInDatabase(req, res, customerAsaasId, cpf, saleId) {
-  User.updateUserByCpf(customerAsaasId, cpf)
+function updateUserIdInDatabase(req, res, customerAsaasId, data, saleId) {
+  User.updateUserByCpf(customerAsaasId, data.cpf)
     .then(userId => {
       console.log('Usuário atualizado com sucesso. AsaasID: ' + customerAsaasId);
-      createAsaasPayment(req, res, customerAsaasId, saleId);
+      createAsaasPayment(req, res, customerAsaasId, saleId, data);
     })
     .catch(err => {
       console.error(err.message);
@@ -110,14 +109,12 @@ function updateUserIdInDatabase(req, res, customerAsaasId, cpf, saleId) {
     });
 }
 
-function createAsaasPayment(req, res, customerAsaasId, saleId) {
-  const total = 10;
-
+function createAsaasPayment(req, res, customerAsaasId, saleId, data) {
   AsaasCreatePaymentCall.call({
     customer: customerAsaasId,
     dueDate: dueDate(),
     billingType: 'CREDIT_CARD',
-    value: total,
+    value: data.total,
     description: 'Contratação de Assinatura - Vetor Benefícios',
     externalReference: saleId,
     callback: {
@@ -152,11 +149,6 @@ app.get('/paidFinished', (req, res) => {
 });
 
 app.post('/finishUserPayment', (req, res) => {
-  console.log("\n\n\n\n")
-  console.log(req.body.event)
-  console.log(req.body.payment.externalReference)
-  console.log("\n\n\n\n")
-
   if (req.headers['asaas-access-token'] != process.env.SECRET_WEBHOOK_KEY) {
     return res.status(401).send('Unauthorized');
   }
@@ -170,11 +162,19 @@ app.post('/finishUserPayment', (req, res) => {
     return res.status(400).send('Pending External Reference');
   }
 
-  const saleId = req.body.payment.externalReference;
+  let saleId = req.body.payment.externalReference;
 
   Sale.getSaleById(saleId)
     .then(sale => {
       console.log('Venda encontrada com sucesso. ID: ' + sale.id);
+
+      Sale.updateSalePaid(sale.id)
+        .then(saleId => {
+          console.log('Venda atualizada com sucesso. ID: ' + saleId);
+        })
+        .catch(err => {
+          console.error('Erro na atualização da venda:' + err.message)
+        });
 
       return User.getUserById(sale.userId);
     })
@@ -215,7 +215,9 @@ app.post('/checkout', (req, res) => {
     address: req.body.endereco,
     cpf: req.body.cpf,
     birthDate: req.body.dataNascimento,
-    phone: req.body.numeroWhatsApp
+    phone: req.body.numeroWhatsApp,
+    cart: JSON.parse(req.body.cart),
+    total: req.body.total
   };
 
   insertUser(req, res, data);
