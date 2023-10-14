@@ -152,13 +152,18 @@ app.get('/paidFinished', (req, res) => {
 });
 
 app.post('/finishUserPayment', (req, res) => {
-  if (req.headers.asaas_access_token != process.env.SECRET_WEBHOOK_KEY) {
+  console.log("\n\n\n\n")
+  console.log(req.body.event)
+  console.log(req.body.payment.externalReference)
+  console.log("\n\n\n\n")
+
+  if (req.headers['asaas-access-token'] != process.env.SECRET_WEBHOOK_KEY) {
     return res.status(401).send('Unauthorized');
   }
   if ((!req.body.event) || (!req.body.payment)) {
     return res.status(400).send('Bad Request');
   }
-  if(req.body.event !== 'PAYMENT_CONFIRMED') {
+  if(req.body.event != 'PAYMENT_CONFIRMED') {
     return res.status(200).send({});
   }
   if (!req.body.payment.externalReference) {
