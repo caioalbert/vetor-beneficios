@@ -4,8 +4,9 @@ html {
   -webkit-text-size-adjust: 100%; }
 
 body {
-  margin: 0; 
+  margin: 0;
 }
+
 
 article,
 aside,
@@ -897,8 +898,8 @@ label {
   font-weight: 700;
   line-height: 16px;
   text-decoration: none !important;
-  background-color: #FFFFFF;
-  color: #0081F6 !important;
+  background-color: #C79E3F;
+  color: #fff !important;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -1010,8 +1011,9 @@ label {
     right: 0;
     height: 50%;
     width: 100%;
-    background: #2294fb;
-    background: linear-gradient(to top right, #0081F6 0, #44A6FF 100%); }
+    background: #C79E3F;
+    background: linear-gradient(to top right, #1CA6A6 0, #0FA697 100%); 
+  }
 
 .hero-inner {
   position: relative;
