@@ -63,9 +63,9 @@ $(document).ready(function() {
     $('.addToCart').click(function() {
         let productName = $(this).data('name');
         let productPrice = parseFloat($(this).data('price'));
-        let productCodBeneficio = $(this).data('codbeneficio');
+        let productCodPlano = $(this).data('codPlano');
 
-        cart.push({ name: productName, price: productPrice, codBeneficio: productCodBeneficio });
+        cart.push({ name: productName, price: productPrice, codPlano: productCodPlano });
         total += productPrice;
 
         updateCart();
