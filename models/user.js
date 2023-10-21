@@ -17,7 +17,8 @@ const userSchema = `
     address VARCHAR(255) NOT NULL,
     cpf VARCHAR(255) NOT NULL,
     birthDate VARCHAR(255) NOT NULL,
-    phone VARCHAR(255) NOT NULL
+    phone VARCHAR(255) NOT NULL,
+    cardBenefitId VARCHAR(255)
   )
 `;
 
@@ -45,6 +46,23 @@ const create = (customerName, email, address, cpf, birthDate, phone) => {
     );
   });
 };
+
+const setCardBenefitIdByUserId = (id, cardBenefitId) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `UPDATE users SET cardBenefitId = ? WHERE id = ?`,
+      [cardBenefitId, id],
+      (err) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });
+}
 
 const getUsers = () => {
   return new Promise((resolve, reject) => {
@@ -139,7 +157,8 @@ const User = {
   updateUser,
   deleteUser,
   count,
-  updateUserByCpf
+  updateUserByCpf,
+  setCardBenefitIdByUserId
 };
 
 module.exports = User;

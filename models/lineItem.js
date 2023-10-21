@@ -15,6 +15,7 @@ const lineItemSchema = `
     quantity INTEGER NOT NULL,
     price REAL NOT NULL,
     saleId INTEGER,
+    codPlano BIGINT,
     FOREIGN KEY (saleId) REFERENCES sales (id)
   )
 `;
@@ -27,11 +28,11 @@ db.run(lineItemSchema, (err) => {
   }
 });
 
-const create = (name, quantity, price, saleId) => {
+const create = (name, quantity, price, saleId, codPlano) => {
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO line_items (name, quantity, price, saleId) VALUES (?, ?, ?, ?)`,
-      [name, quantity, price, saleId],
+      `INSERT INTO line_items (name, quantity, price, saleId, codPlano) VALUES (?, ?, ?, ?, ?)`,
+      [name, quantity, price, saleId, codPlano],
       function (err) {
         if (err) {
           console.log(err);
@@ -74,11 +75,11 @@ const getLineItemsBySaleId = (saleId) => {
   });
 };
 
-const updateLineItem = (id, name, quantity, price, saleId) => {
+const updateLineItem = (id, name, quantity, price, saleId, codPlano) => {
   return new Promise((resolve, reject) => {
     db.run(
-      `UPDATE line_items SET name = ?, quantity = ?, price = ?, saleId = ? WHERE id = ?`,
-      [name, quantity, price, saleId, id],
+      `UPDATE line_items SET name = ?, quantity = ?, price = ?, saleId = ?, codPlano = ? WHERE id = ?`,
+      [name, quantity, price, saleId, codPlano, id],
       (err) => {
         if (err) {
           console.error(err);

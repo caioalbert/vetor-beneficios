@@ -61,9 +61,10 @@ $(document).ready(function() {
     let total = parseFloat(localStorage.getItem('total')) || 0;
 
     $('.addToCart').click(function() {
+        console.log($(this).data('cod-plano'));
         let productName = $(this).data('name');
         let productPrice = parseFloat($(this).data('price'));
-        let productCodPlano = $(this).data('codPlano');
+        let productCodPlano = $(this).data('cod-plano');
 
         cart.push({ name: productName, price: productPrice, codPlano: productCodPlano });
         total += productPrice;

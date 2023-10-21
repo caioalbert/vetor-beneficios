@@ -11,6 +11,8 @@ const LineItem = require('./models/lineItem');
 const AsaasCreateCustomerCall = require('./lib/asaas/createCustomerCall');
 const AsaasCreatePaymentCall = require('./lib/asaas/createPaymentCall');
 const SiprovCreateCustomerCall = require('./lib/siprov/createCustomerCall');
+const SiprovCreateBenefitCall = require('./lib/siprov/createBenefitCall');
+const Authenticator = require('./lib/siprov/authenticator');
 
 const PORT = 3001;
 app.set('view engine', 'ejs')
@@ -27,7 +29,7 @@ function dueDate() {
   const date = new Date();
   date.setDate(date.getDate() + 1);
 
-  const year = date.getFullYear();month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear(); month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
@@ -35,7 +37,6 @@ function dueDate() {
 function insertUser(req, res, data) {
   User.create(data.customerName, data.email, data.address, data.cpf, data.birthDate, data.phone)
     .then(userId => {
-      console.log('Usuário criado com sucesso. ID: ' + userId);
       createSale(req, res, data, userId);
     })
     .catch(err => {
@@ -50,7 +51,6 @@ function createSale(req, res, data, userId) {
 
   Sale.create(userId, total, dueDate())
     .then(saleId => {
-      console.log('Venda criada com sucesso. ID: ' + saleId);
       insertLineItems(req, res, data, saleId, cart);
     })
     .catch(err => {
@@ -63,10 +63,8 @@ function insertLineItems(req, res, data, saleId, cart) {
   const failureCount = 0;
 
   cart.forEach(item => {
-    LineItem.create(item.name, 1, item.price, saleId)
-      .then(lineItemId => {
-        console.error('Item de venda criado com sucesso. ID: ' + lineItemId);
-      })
+    LineItem.create(item.name, 1, item.price, saleId, item.codPlano)
+      .then(lineItemId => { })
       .catch(err => {
         console.error('Erro na criação do item de venda:' + err.message)
         failureCount++;
@@ -75,7 +73,7 @@ function insertLineItems(req, res, data, saleId, cart) {
 
   if (failureCount === 0) {
     createAsaasCustomerAndPayment(req, res, data, saleId);
-  }else {
+  } else {
     res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
   }
 }
@@ -88,7 +86,6 @@ function createAsaasCustomerAndPayment(req, res, data, saleId) {
     cpfCnpj: data.cpf
   }))
     .then(asaasResponse => {
-      console.log('Cliente criado com sucesso no Asaas. ID: ' + asaasResponse.id);
       updateUserIdInDatabase(req, res, asaasResponse.id, data, saleId);
     })
     .catch(err => {
@@ -100,7 +97,6 @@ function createAsaasCustomerAndPayment(req, res, data, saleId) {
 function updateUserIdInDatabase(req, res, customerAsaasId, data, saleId) {
   User.updateUserByCpf(customerAsaasId, data.cpf)
     .then(userId => {
-      console.log('Usuário atualizado com sucesso. AsaasID: ' + customerAsaasId);
       createAsaasPayment(req, res, customerAsaasId, saleId, data);
     })
     .catch(err => {
@@ -121,21 +117,19 @@ function createAsaasPayment(req, res, customerAsaasId, saleId, data) {
       successUrl: 'https://vetorbeneficios.com/paidFinished?saleId=' + saleId,
       autoRedirect: true
     }
+  })
+    .then(asaasResponse => {
+      updateSaleIdInDatabase(req, res, asaasResponse, saleId);
     })
-      .then(asaasResponse => {
-        console.log('Pagamento criado com sucesso no Asaas. ID: ' + asaasResponse.id);
-        updateSaleIdInDatabase(req, res, asaasResponse, saleId);
-      })
-      .catch(err => {
-        console.error(err.message);
-        res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
-      });
+    .catch(err => {
+      console.error(err.message);
+      res.redirect('/errorPage?failure=Ocorreu um erro ao finalizar a transação, favor tentar novamente.');
+    });
 }
 
 function updateSaleIdInDatabase(req, res, asaasResponse, saleId) {
   Sale.updateSaleAsaasData(saleId, asaasResponse.id, asaasResponse.invoiceUrl)
     .then(saleId => {
-      console.log('Venda atualizada com sucesso. AsaasID: ' + asaasResponse.id);
       res.redirect(asaasResponse.invoiceUrl);
     })
     .catch(err => {
@@ -157,64 +151,94 @@ app.get('/paidFinished', (req, res) => {
     });
 });
 
-app.post('/finishUserPayment', (req, res) => {
+app.post('/finishUserPayment', async (req, res) => {
   if (req.headers['asaas-access-token'] != process.env.SECRET_WEBHOOK_KEY) {
     return res.status(401).send('Unauthorized');
   }
   if ((!req.body.event) || (!req.body.payment)) {
     return res.status(400).send('Bad Request');
   }
-  if(req.body.event != 'PAYMENT_CONFIRMED') {
+  if (req.body.event != 'PAYMENT_CONFIRMED') {
     return res.status(200).send({});
   }
   if (!req.body.payment.externalReference) {
     return res.status(400).send('Pending External Reference');
   }
 
-  let saleId = req.body.payment.externalReference;
+  try {
+    const authData = await Authenticator.call();
+    const token = authData.authorizationToken;
 
-  Sale.getSaleById(saleId)
-    .then(sale => {
-      console.log('Venda encontrada com sucesso. ID: ' + sale.id);
+    let saleId = req.body.payment.externalReference;
+    let userInstance = null;
+    let saleItemsInstance = null;
 
-      Sale.updateSalePaid(sale.id)
-        .then(saleId => {
-          console.log('Venda atualizada com sucesso. ID: ' + saleId);
-        })
-        .catch(err => {
-          console.error('Erro na atualização da venda:' + err.message)
-        });
+    const sale = await Sale.getSaleById(saleId);
+    const lineItems = await LineItem.getLineItemsBySaleId(sale.id);
+    saleItemsInstance = lineItems;
 
-      return User.getUserById(sale.userId);
-    })
-    .then(user => {
-      console.log('Usuário encontrado com sucesso. ID: ' + user.id);
+    await Sale.updateSalePaid(sale.id);
 
-      SiprovCreateCustomerCall.call({
-        codLoja: 2614,
-        codigoIntegracao: 519,
-        cpfCnpj: user.cpf,
-        dataNascimento: user.birthDate,
-        email: user.email,
-        natureza: 'F',
-        nomePessoa: user.customerName,
-        telefones: [
-          {
-            tipo: 'Celular',
-            numero: user.phone
-          }
-        ]
-      })
-        
-    })
-    .then(siprovResponse => {
-      console.log('Cliente criado com sucesso no Siprov.');
-      return res.status(200).send({});
-    })
-    .catch(err => {
-      console.log(err.message)
-      return res.status(200).send({ error: 'Falha ao criar cliente no Siprov.'});
-    });
+    userInstance = await User.getUserById(sale.userId);
+
+    const siprovCustomerResponse = await SiprovCreateCustomerCall.call({
+      codLoja: 2614,
+      codigoIntegracao: 519,
+      cpfCnpj: userInstance.cpf,
+      dataNascimento: userInstance.birthDate,
+      email: userInstance.email,
+      natureza: 'F',
+      nomePessoa: userInstance.customerName,
+      telefones: [
+        {
+          tipo: 'Celular',
+          numero: userInstance.phone
+        }
+      ]
+    }, token);
+
+    let firstCardCod = null;
+    let body = {
+      "ativo": true,
+      "codLoja": 2614,
+      "cpfCnpj": userInstance.cpf,
+      "diaVencimento": 15
+    };
+
+    for (let index = 0; index < saleItemsInstance.length; index++) {
+      if (index === 0) {
+        body.codPlano = saleItemsInstance[index].codPlano;
+
+        console.log(userInstance.cardBenefitId)
+      
+        if (userInstance.cardBenefitId) {
+          body.numeroCartaoDesconto = userInstance.cardBenefitId;
+        }
+      
+        const siprovBenefitResponse = await SiprovCreateBenefitCall.call(body, token);
+        firstCardCod = siprovBenefitResponse.numeroCartaoDesconto;
+      
+        console.log(firstCardCod)
+        console.log(userInstance)
+
+        if (!userInstance.cardBenefitId) {
+          User.setCardBenefitIdByUserId(userInstance.id, firstCardCod);
+        }
+      } else {
+        body.codPlano = saleItemsInstance[index].codPlano;
+        body.numeroCartaoDesconto = firstCardCod;
+        await SiprovCreateBenefitCall.call(body, token);
+      }
+      
+    }
+
+    console.log('Todas as operações foram concluídas com sucesso.');
+
+    return res.status(200).send({});
+  } catch (err) {
+    console.error('Erro: ' + err.message);
+    return res.status(200).send({ error: 'Falha ao criar cliente no Siprov.' });
+  }
 });
 
 app.post('/checkout', (req, res) => {
