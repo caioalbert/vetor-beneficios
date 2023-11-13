@@ -3,8 +3,8 @@ $(document).ready(function() {
         $('#cartItems').empty();
         cart.forEach(item => {
           // faz o append do item na lista e coloca um label circulado em vermelho com um - dentro e uma classe removeItem e ele vai logo após o preço juntinho
-          $('#cartItems').append('<li class="list-group-item d-flex justify-content-between lh-condensed"><div><h6 class="my-0 text-muted">' + item.name + '</h6></div><span class="text-muted">R$ ' + item.price + '</span><span class="removeItem badge badge-outline badge-small badge-pill">X</span></li>');
-
+          $('#cartItems').append(
+            '<li class="list-group-item d-flex justify-content-between lh-condensed"><div><h6 class="my-0 text-muted">' + item.name + '</h6></div><span class="text-muted"><div>R$ ' + item.price + '</span><span class="removeItem badge badge-outline badge-small badge-pill">X</span></div></li>');
         });
 
         $('#cartItems').append('<li class="list-group-item d-flex justify-content-between"><span>Total (BRL)</span><strong>R$ ' + total.toFixed(2).replace('.', ',') + '</strong></li>');
